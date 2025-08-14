@@ -1,11 +1,11 @@
-namespace Template.Services;
+namespace MailResenderr.Services;
 
-public interface ITemplateService
+public interface IMailResenderrService
 {
     string GetObfuscatedName(ReadOnlySpan<char> nonObfuscatedName);
 }
 
-public class TemplateService : ITemplateService
+public class MailResenderrService : IMailResenderrService
 {
     public string GetObfuscatedName(ReadOnlySpan<char> nonObfuscatedName)
     {
