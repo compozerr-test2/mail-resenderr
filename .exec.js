@@ -16,6 +16,15 @@ const capitalizeFirstLetter = (string) => {
 const lowerCase = (string) => {
     return string.toLowerCase();
 }
+
+const sanitizeName = (name) => {
+    name = name.trim();
+
+    // From kebab-case to camelCase
+    name = name.split('-').reduce((acc, part) => acc === "" ? part : acc + capitalizeFirstLetter(part), "");
+    return name.replace(/[^a-zA-Z0-9_]/g, '');
+};
+
 const replaceInFile = (filePath, searchValue, replaceValue) => {
     const content = fs.readFileSync(filePath, 'utf8');
     const updatedContent = content.replace(new RegExp(searchValue, 'g'), replaceValue);
@@ -47,21 +56,21 @@ const renameFiles = (files, searchValue, replaceValue) => {
             console.warn(`File not found: ${file}`);
         }
     });
-    
+
     const allDirs = new Set(files.map(file => path.dirname(file)));
     const sortedDirs = Array.from(allDirs)
         .sort((a, b) => b.split(path.sep).length - a.split(path.sep).length);
-    
+
     sortedDirs.forEach(dir => {
         if (dir === '.' || !fs.existsSync(dir)) return;
-        
+
         const parentDir = path.dirname(dir);
         const basename = path.basename(dir);
-        
+
         if (basename.includes(searchValue)) {
             const newBasename = basename.replace(new RegExp(searchValue, 'g'), replaceValue);
             const newPath = path.join(parentDir, newBasename);
-            
+
             try {
                 fs.renameSync(dir, newPath);
                 console.log(`Renamed directory from ${dir} to ${newPath}`);
@@ -94,10 +103,12 @@ if (fs.existsSync(gitignorePath)) {
     files = glob.sync('**/*', { nodir: true });
 }
 
-replaceInFiles(files, 'Template', capitalizeFirstLetter(newName));
-replaceInFiles(files, 'template', lowerCase(newName));
+const sanitizedName = sanitizeName(newName);
 
-renameFiles(files, 'Template', capitalizeFirstLetter(newName));
-renameFiles(files, 'template', lowerCase(newName));
+replaceInFiles(files, 'Template', capitalizeFirstLetter(sanitizedName));
+replaceInFiles(files, 'template', lowerCase(sanitizedName));
+
+renameFiles(files, 'Template', capitalizeFirstLetter(sanitizedName));
+renameFiles(files, 'template', lowerCase(sanitizedName));
 
 selfDestruct();
